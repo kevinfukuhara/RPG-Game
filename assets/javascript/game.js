@@ -5,7 +5,8 @@ $(document).ready(function () {
 
     // Create Variables for the Game
     // Need an array for the possible select characters
-    var characterNames = ["pikachu", "squirtle", "charmander", "bulbasaur"];
+    var characterNames = [];
+    var regulars = ["pikachu", "squirtle", "charmander", "bulbasaur"];
     // var characterPicLoc = ['../images/pikachu.png', '../images/.png', '../images/pikachu.png', '../images/pikachu.png'
     var legendaryNames = ["mewtwo", "mew", "ho-oh", "lugia"];
     var heroArray = [];
@@ -20,17 +21,18 @@ $(document).ready(function () {
 
     var characterHP = 100;
     // var ApArray = [10, 15, 20, 25];
-    var apArray = [10, 10, 10];
-    var cApArray = [5, 10, 15, 20];
+    var apArray = [10, 15];
+    var cApArray = [10, 10, 15, 25];
+    var randAP;
+    var randCAP;
 
-    var characterObj = function (name, heroStatus, defenderStatus, hp, attackPower, counterAP, alive) {
+    var characterObj = function (name, heroStatus, defenderStatus, hp, attackPower, counterAP) {
         this.name = name;                 // String: Name of Pokemon
         this.heroStatus = heroStatus;         // Boolean: Whether or not pokemon object is a hero or enemy
         this.defenderStatus = defenderStatus;   // Boolean: Whether or not the enemy is a Defender
         this.hp = hp;               // Number: Health points
         this.attackPower = attackPower;
         this.counterAP = counterAP;  
-        this.alive = alive;         // Boolean: mark if the character is dead
 
         this.printStats = function(){
             console.log(this.name);
@@ -85,6 +87,90 @@ $(document).ready(function () {
             
             $("#character-list").append(charaImage);
         } 
+
+        $(".character-icon").on("click", function(event) {
+            event.stopPropagation();
+            event.stopImmediatePropagation();
+    
+            console.log("character-icon CLICKED!");
+            
+            if(roundStart === false && heroChosen === false) {
+                // This is the case where we select a hero
+                heroName = $(this).attr("data-value");
+                console.log(heroName + " chosen as hero!");
+                roundStart = true;
+                randAP = Math.floor(Math.random() * 2);
+                randCAP =  Math.floor(Math.random() * 4);
+    
+                var hero = new characterObj(heroName, true, false, characterHP, apArray[randAP], cApArray[randCAP]);
+    
+                heroArray.push(hero);
+                heroChosen = true;
+                console.log(heroArray[0].printStats());
+    
+                // put all other characters into the enemy array
+                for (i = 0; i < characterNames.length; i++){
+                    if(characterNames[i] != heroName) {
+                        randAP = Math.floor(Math.random() * 2);
+                        randCAP =  Math.floor(Math.random() * 4);
+                        var enemy = new characterObj(characterNames[i], false, false, characterHP, apArray[randAP], cApArray[randCAP]);
+                        enemyArray.push(enemy);
+                        console.log("Pushed " + characterNames[i] + " into the Enemy Array");
+                        enemy.printStats();
+                    } else {
+                        console.log("Passed the 'Hero' when making Enemy Array");
+                    }
+    
+                    // hide all characters that are enemies from the Character select row
+                    // if ($("#" + characterNames[i]).attr("data-value") != heroName) {
+                    //     console.log("Trying to hide " + ($("#"+characterNames[i]).attr("data-value")));
+                    //     // $("#" + characterNames[i]).attr("display", "none");
+                    //     $("#" + characterNames[i]).hide();
+                    // }
+                    // OR 
+                    // Hide all and then create new img object made from the new character objects
+                    $("#" + characterNames[i]).remove();
+                }
+                // Make only the hero pokemon object be a img in the list of partner pokemon div:
+                listObjCharacters("character-list", heroArray);
+    
+                // Add all characters in the enemy array into the enemy display box in HTML
+                listObjCharacters("enemy-list", enemyArray);
+    
+            } 
+            // else if (defenderChosen === false) {
+            //     // Select a defender from the list of enemies
+            //     defenderName = $(this).attr("data-value");
+            //     console.log(defenderName + " chosen as defender!");
+            //     var defender = new characterObj(defenderName, false, true, characterHP, apArray[0], cApArray[0], true);
+    
+            //     defenderArray.push(defender);
+            //     defenderChosen = true;
+            //     console.log(defenderArray[0].name);
+            // }
+            console.log("ended one button click");
+    
+            $(".character-icon").on("click", function(secEvent) {
+                console.log("entered the SECOND CLICK EVENT HANDLER");
+                if (defenderChosen === false) {
+                    // Select a defender from the list of enemies
+                    defenderName = $(this).attr("data-value");
+                    randAP = Math.floor(Math.random() * 2);
+                    randCAP =  Math.floor(Math.random() * 4);
+                    console.log(defenderName + " chosen as defender!");
+                    var defender = new characterObj(defenderName, false, true, characterHP, apArray[randAP], cApArray[randCAP]);
+        
+                    defenderArray.push(defender);
+                    defenderChosen = true;
+                    console.log(defenderArray[0].name + " pushed into defender array");
+                    defenderArray[0].printStats();
+    
+                    $("#" + defenderName).remove();
+    
+                    listObjCharacters("defender-list", defenderArray);
+                }
+            });
+        });
     }
 
     function listObjCharacters (divName, characterArray) {
@@ -99,101 +185,111 @@ $(document).ready(function () {
 
     function newRound() {
         console.log("Starting a new Round!");
+        heroChosen = false;
+        defenderChosen = false;
+        roundStart = false;
         createCharacters();
         // listCharacters("character-list", characterNames);
         console.log("A New Round has Begun!");
     }
 
-    function newGame() {
-        console.log("Starting a new Game!");
-        newRound();
-        console.log("New Game has Begun!");
+    function characterSetPick (){
+        var select = confirm("Starter Pokemon? ('Cancel' for Legendaries)");
+        if (select) {
+            characterNames = regulars;
+        } else {
+            characterNames = legendaryNames;
+        }
     }
 
-    // -----------------------------------------
-    //      Start Game
-    // -----------------------------------------
-
-    newGame();
 
     // -----------------------------------------
     //      Event Handlers
     // -----------------------------------------
 
-    $(".character-icon").on("click", function(event) {
-        event.stopPropagation();
-        event.stopImmediatePropagation();
+    // $(".character-icon").on("click", function(event) {
+    //     event.stopPropagation();
+    //     event.stopImmediatePropagation();
 
-        console.log("character-icon CLICKED!");
+    //     console.log("character-icon CLICKED!");
         
-        if(roundStart === false && heroChosen === false) {
-            // This is the case where we select a hero
-            heroName = $(this).attr("data-value");
-            console.log(heroName + " chosen as hero!");
-            roundStart = true;
-            var hero = new characterObj(heroName, true, false, characterHP, apArray[0], cApArray[0], true);
+    //     if(roundStart === false && heroChosen === false) {
+    //         // This is the case where we select a hero
+    //         heroName = $(this).attr("data-value");
+    //         console.log(heroName + " chosen as hero!");
+    //         roundStart = true;
+    //         randAP = Math.floor(Math.random() * 2);
+    //         randCAP =  Math.floor(Math.random() * 4);
 
-            heroArray.push(hero);
-            heroChosen = true;
-            console.log(heroArray[0].name);
+    //         var hero = new characterObj(heroName, true, false, characterHP, apArray[randAP], cApArray[randCAP]);
 
-            // put all other characters into the enemy array
-            for (i = 0; i < characterNames.length; i++){
-                if(characterNames[i] != heroName) {
-                    var enemy = new characterObj(characterNames[i], false, false, characterHP, apArray[0], cApArray[0], true);
-                    enemyArray.push(enemy);
-                    console.log("Pushed " + characterNames[i] + " into the Enemy Array");
-                } else {
-                    console.log("Passed the 'Hero' when making Enemy Array");
-                }
+    //         heroArray.push(hero);
+    //         heroChosen = true;
+    //         console.log(heroArray[0].printStats());
 
-                // hide all characters that are enemies from the Character select row
-                // if ($("#" + characterNames[i]).attr("data-value") != heroName) {
-                //     console.log("Trying to hide " + ($("#"+characterNames[i]).attr("data-value")));
-                //     // $("#" + characterNames[i]).attr("display", "none");
-                //     $("#" + characterNames[i]).hide();
-                // }
-                // OR 
-                // Hide all and then create new img object made from the new character objects
-                $("#" + characterNames[i]).remove();
-            }
-            // Make only the hero pokemon object be a img in the list of partner pokemon div:
-            listObjCharacters("character-list", heroArray);
+    //         // put all other characters into the enemy array
+    //         for (i = 0; i < characterNames.length; i++){
+    //             if(characterNames[i] != heroName) {
+    //                 randAP = Math.floor(Math.random() * 2);
+    //                 randCAP =  Math.floor(Math.random() * 4);
+    //                 var enemy = new characterObj(characterNames[i], false, false, characterHP, apArray[randAP], cApArray[randCAP]);
+    //                 enemyArray.push(enemy);
+    //                 console.log("Pushed " + characterNames[i] + " into the Enemy Array");
+    //                 enemy.printStats();
+    //             } else {
+    //                 console.log("Passed the 'Hero' when making Enemy Array");
+    //             }
 
-            // Add all characters in the enemy array into the enemy display box in HTML
-            listObjCharacters("enemy-list", enemyArray);
+    //             // hide all characters that are enemies from the Character select row
+    //             // if ($("#" + characterNames[i]).attr("data-value") != heroName) {
+    //             //     console.log("Trying to hide " + ($("#"+characterNames[i]).attr("data-value")));
+    //             //     // $("#" + characterNames[i]).attr("display", "none");
+    //             //     $("#" + characterNames[i]).hide();
+    //             // }
+    //             // OR 
+    //             // Hide all and then create new img object made from the new character objects
+    //             $("#" + characterNames[i]).remove();
+    //         }
+    //         // Make only the hero pokemon object be a img in the list of partner pokemon div:
+    //         listObjCharacters("character-list", heroArray);
 
-        } 
-        // else if (defenderChosen === false) {
-        //     // Select a defender from the list of enemies
-        //     defenderName = $(this).attr("data-value");
-        //     console.log(defenderName + " chosen as defender!");
-        //     var defender = new characterObj(defenderName, false, true, characterHP, apArray[0], cApArray[0], true);
+    //         // Add all characters in the enemy array into the enemy display box in HTML
+    //         listObjCharacters("enemy-list", enemyArray);
 
-        //     defenderArray.push(defender);
-        //     defenderChosen = true;
-        //     console.log(defenderArray[0].name);
-        // }
-        console.log("ended one button click");
+    //     } 
+    //     // else if (defenderChosen === false) {
+    //     //     // Select a defender from the list of enemies
+    //     //     defenderName = $(this).attr("data-value");
+    //     //     console.log(defenderName + " chosen as defender!");
+    //     //     var defender = new characterObj(defenderName, false, true, characterHP, apArray[0], cApArray[0], true);
 
-        $(".character-icon").on("click", function(secEvent) {
-            console.log("entered the SECOND CLICK EVENT HANDLER");
-            if (defenderChosen === false) {
-                // Select a defender from the list of enemies
-                defenderName = $(this).attr("data-value");
-                console.log(defenderName + " chosen as defender!");
-                var defender = new characterObj(defenderName, false, true, characterHP, apArray[0], cApArray[0], true);
+    //     //     defenderArray.push(defender);
+    //     //     defenderChosen = true;
+    //     //     console.log(defenderArray[0].name);
+    //     // }
+    //     console.log("ended one button click");
+
+    //     $(".character-icon").on("click", function(secEvent) {
+    //         console.log("entered the SECOND CLICK EVENT HANDLER");
+    //         if (defenderChosen === false) {
+    //             // Select a defender from the list of enemies
+    //             defenderName = $(this).attr("data-value");
+    //             randAP = Math.floor(Math.random() * 2);
+    //             randCAP =  Math.floor(Math.random() * 4);
+    //             console.log(defenderName + " chosen as defender!");
+    //             var defender = new characterObj(defenderName, false, true, characterHP, apArray[randAP], cApArray[randCAP]);
     
-                defenderArray.push(defender);
-                defenderChosen = true;
-                console.log(defenderArray[0].name + " pushed into defender array");
+    //             defenderArray.push(defender);
+    //             defenderChosen = true;
+    //             console.log(defenderArray[0].name + " pushed into defender array");
+    //             defenderArray[0].printStats();
 
-                $("#" + defenderName).remove();
+    //             $("#" + defenderName).remove();
 
-                listObjCharacters("defender-list", defenderArray);
-            }
-        });
-    });
+    //             listObjCharacters("defender-list", defenderArray);
+    //         }
+    //     });
+    // });
 
     $("#actionBtn").on("click", function(actionEvent) {
         // Logic for when hero attacks a defender
@@ -228,8 +324,8 @@ $(document).ready(function () {
 
                 defenderChosen = false;
 
-                console.log("Current win count: " + wins);
                 wins++;
+                console.log("Current win count: " + wins);
 
                 //Check if User won!
                 if (wins === (characterNames.length - 1)) {
@@ -255,10 +351,42 @@ $(document).ready(function () {
                     console.log("Attack again.");
                 }
             }
-
         }
 
     });
+
+    //Logic for reset button
+    $("#resetBtn").on("click", function(actionEvent) {
+        // Clean out the arrays
+        for(var j = 0; j < heroArray.length; j++){  
+            heroArray.pop();
+        } 
+        for(var k = 0; k < enemyArray.length; j++){  
+            enemyArray.pop();
+        } 
+        for(var l = 0; l < enemyArray.length; j++){  
+            enemyArray.pop();
+        } 
+
+        // Clean out the HTML
+        $("#character-list").empty();
+        $("#enemy-list").empty();
+        $("#defender-list").empty();
+
+        // reset wins counter
+        wins=0;
+
+        // Call new Round method
+        newRound();
+        // location.reload();
+    });
+
+    // -----------------------------------------
+    //      Start Game
+    // -----------------------------------------
+
+    characterSetPick();
+    newRound();
 
 // document ready close brace
 }); 
