@@ -22,21 +22,47 @@
 </head>
 
 <body>
-    <h1>Choose your Pokemon:</h1>
-    <div id="character-list">
-        <h1>Partner Pokemon:</h1>
+    <div class="container">
+        <div id="battleScreen">
+            <div class="row">
+                <div class="col-xs-6 pokemon-holder">
+                    <h2>Enemies:</h2>
+                    <div id="enemy-list">
+                    </div>
+                </div>
+                <div class="col-xs-6  pokemon-holder">
+                    <h2>Defender:</h2>
+                    <div id="defender-list">
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <h2>Partner Pokemon:</h2>
+            </div>
+            <div class="row">
+                <div class="col-xl-12">
+                    <div id="character-list" class="pokemon-holder">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- <h1 id="choose-pokemon">Choose your Pokemon:</h1> -->
+
+        <div class="row">
+            <div class="jumbotron">
+                <button id="actionBtn">Attack!</button>
+                <button id="resetBtn">PokeCenter - Restart</button>
+                <button id="playBtn">Sound On</button>
+                <button id="pauseBtn">Sound Off</button>
+                <hr>
+                <div id="announce">
+                    <h1 id="choose-pokemon">Choose your Pokemon:</h1>
+                </div>
+            </div>
+        </div>
+
     </div>
-    <div id="enemy-list">
-        <h1>Enemies:</h1>
-    </div>
-
-    <button id="actionBtn">Attack!</button>
-    <button id="resetBtn">Rage Quit - Restart</button>
-
-    <div id="defender-list">
-        <h1>Defender:</h1>
-    </div>
-
-
     <script type="text/javascript" src="assets/javascript/game.js"></script>
 </body>
